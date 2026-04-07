@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<!-- saved from url=(0033)http://nfbgu1.ru/webgl/webgl.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>three.js webgl - геометрические фигуры</title>
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<div id="info">
+			Трехмерные фигуры
+		</div>
+
+		<script type="importmap">
+		//Импортируется библиотека с сайта threejs.org 
+			{
+				"imports": {
+					"three": "https://threejs.org/build/three.module.js"
+				}
+			}
+		</script>
+		
+		<script type="module">
+		
+			import * as THREE from 'three';
+			import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js'
+			import { TeapotGeometry } from 'https://threejs.org/examples/jsm/geometries/TeapotGeometry.js';
+
+			var camera, scene, renderer;
+			var controls;
+			var ambientLight, light;
+			init();
+			animate();
+
+			function init() {
+
+				var container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// CAMERA
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 5000 );
+				camera.position.set( 300, 700, 1200 );
+
+				// LIGHTS
+				ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
+
+				light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+				light.position.set( 1, 1, 1 );				
+				// direction is set in GUI
+
+				// RENDERER
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				// EVENTS
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				// CONTROLS
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.rotateSpeed = 0.5; 
+				controls.enableZoom = true;  
+				controls.zoomSpeed = 0.5;  
+
+				controls.minDistance = 500;
+				controls.maxDistance = 2500;
+				
+				controls.enableDamping = true;
+
+				// scene itself
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xD3D3D3 );
+
+				scene.add( ambientLight );
+				scene.add( light );
+			
+
+				// ==================== ПЕРВЫЙ РЯД ====================
+				// голубой шар (сфера)
+				var geometry = new THREE.SphereGeometry( 100, 32, 32 );
+				var material = new THREE.MeshPhongMaterial( { color: 0x00BFFF } );
+				var sphere = new THREE.Mesh( geometry, material );
+				sphere.position.set( -450, 100, 0 );
+				scene.add( sphere );
+				
+				// желтая пирамида (конус с 4 сегментами)
+				var geometry = new THREE.CylinderGeometry( 0, 90, 180, 4 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFFD700 } );
+				var pyramid = new THREE.Mesh( geometry, material );
+				pyramid.position.set( -100, 90, 0 );
+				scene.add( pyramid );
+				
+				// розовый прямоугольный параллелепипед
+				var geometry = new THREE.BoxGeometry( 160, 100, 200 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFF69B4 } );
+				var pinkBox = new THREE.Mesh( geometry, material );
+				pinkBox.position.set( 280, 50, 0 );
+				scene.add( pinkBox );
+				
+				// ==================== ВТОРОЙ РЯД ====================
+				// фиолетовый конус
+				var geometry = new THREE.CylinderGeometry( 0, 100, 200, 32 );
+				var material = new THREE.MeshPhongMaterial( { color: 0x8B00FF } );
+				var purpleCone = new THREE.Mesh( geometry, material );
+				purpleCone.position.set( -450, 100, 350 );
+				scene.add( purpleCone );
+				
+				// зеленый чайник (цвет и расположение изменены)
+				var geometry = new TeapotGeometry( 100 );
+				var material = new THREE.MeshPhongMaterial( { color: 0x32CD32 } );	
+				var teapot = new THREE.Mesh( geometry, material );
+				teapot.position.set( -100, 120, 350 ); 					
+				scene.add( teapot );
+				
+				// белый усеченный конус
+				var geometry = new THREE.CylinderGeometry( 120, 60, 160, 32 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFFFFFF } );
+				var frustum = new THREE.Mesh( geometry, material );
+				frustum.position.set( 280, 80, 350 );
+				scene.add( frustum );
+				
+				// ==================== ТРЕТИЙ РЯД ====================
+				// красный цилиндр
+				var geometry = new THREE.CylinderGeometry( 80, 80, 200, 32 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFF0000 } );
+				var redCylinder = new THREE.Mesh( geometry, material );
+				redCylinder.position.set( -450, 100, -350 );
+				scene.add( redCylinder );
+				
+				// красный тетраэдр
+				var geometry = new THREE.TetrahedronGeometry( 90 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFF3333 } );
+				var tetra = new THREE.Mesh( geometry, material );
+				tetra.position.set( -100, 90, -350 );
+				scene.add( tetra );
+				
+				// розовая пирамида (конус с 4 сегментами)
+				var geometry = new THREE.CylinderGeometry( 0, 90, 180, 4 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xFFB6C1 } );
+				var pinkPyramid = new THREE.Mesh( geometry, material );
+				pinkPyramid.position.set( 280, 90, -350 );
+				scene.add( pinkPyramid );
+
+				// вспомогательная сетка
+				const helper = new THREE.GridHelper( 1000, 10 );
+				scene.add( helper );
+			}
+
+			// EVENT HANDLERS
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				controls.update();
+				render();
+			}
+
+			function render() {
+				renderer.render( scene, camera );
+			}			
+
+		</script>
+	
+</body></html>
