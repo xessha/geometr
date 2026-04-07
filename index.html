@@ -1,170 +1,197 @@
 ﻿<!DOCTYPE html>
-<!-- saved from url=(0033)http://nfbgu1.ru/webgl/webgl.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>three.js webgl - геометрические фигуры</title>
-		
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-	</head>
-	<body>
-		<div id="info">
-			Трехмерные фигуры
-		</div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>three.js webgl - геометрические фигуры</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: black;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        Трехмерные фигуры
+    </div>
 
-		<script type="importmap">
-		//Импортируется библиотека с сайта threejs.org 
-			{
-				"imports": {
-					"three": "https://threejs.org/build/three.module.js"
-				}
-			}
-		</script>
-		
-		<script type="module">
-		
-			import * as THREE from 'three';
-			import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js'
-			import { TeapotGeometry } from 'https://threejs.org/examples/jsm/geometries/TeapotGeometry.js';
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TeapotGeometry } from 'three/addons/geometries/TeapotGeometry.js';
 
-			var camera, scene, renderer;
-			var controls;
-			var ambientLight, light;
-			init();
-			animate();
+        var camera, scene, renderer;
+        var controls;
+        var ambientLight, light;
+        init();
+        animate();
 
-			function init() {
+        function init() {
+            var container = document.createElement('div');
+            document.body.appendChild(container);
 
-				var container = document.createElement( 'div' );
-				document.body.appendChild( container );
+            // CAMERA
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 5000);
+            camera.position.set(300, 600, 1000);
 
-				// CAMERA
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 5000 );
-				camera.position.set( 300, 700, 1200 );
+            // LIGHTS
+            ambientLight = new THREE.AmbientLight(0x444444);
+            scene = new THREE.Scene();
+            scene.add(ambientLight);
 
-				// LIGHTS
-				ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
+            // Main directional light
+            light = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+            light.position.set(2, 5, 3);
+            scene.add(light);
 
-				light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
-				light.position.set( 1, 1, 1 );				
-				// direction is set in GUI
+            // Fill light from below
+            var fillLight = new THREE.DirectionalLight(0x88aaff, 0.5);
+            fillLight.position.set(-1, -1, 0.5);
+            scene.add(fillLight);
 
-				// RENDERER
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				container.appendChild( renderer.domElement );
+            // Back light
+            var backLight = new THREE.DirectionalLight(0xffaa88, 0.4);
+            backLight.position.set(0, 1, -2);
+            scene.add(backLight);
 
-				// EVENTS
-				window.addEventListener( 'resize', onWindowResize, false );
+            // RENDERER
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
 
-				// CONTROLS
-				controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', render );
-				controls.rotateSpeed = 0.5; 
-				controls.enableZoom = true;  
-				controls.zoomSpeed = 0.5;  
+            // EVENTS
+            window.addEventListener('resize', onWindowResize, false);
 
-				controls.minDistance = 500;
-				controls.maxDistance = 2500;
-				
-				controls.enableDamping = true;
+            // CONTROLS
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.rotateSpeed = 0.8;
+            controls.enableZoom = true;
+            controls.zoomSpeed = 0.8;
+            controls.minDistance = 300;
+            controls.maxDistance = 2000;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
 
-				// scene itself
-				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xD3D3D3 );
+            // scene background
+            scene.background = new THREE.Color(0xD3D3D3);
 
-				scene.add( ambientLight );
-				scene.add( light );
-			
+            // ==================== ПЕРВЫЙ РЯД (Z = 0) ====================
+            
+            // 1. Голубой шар
+            var geometry = new THREE.SphereGeometry(80, 64, 64);
+            var material = new THREE.MeshStandardMaterial({ color: 0x00BFFF, roughness: 0.3, metalness: 0.1 });
+            var sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(-350, 80, 0);
+            scene.add(sphere);
 
-				// ==================== ПЕРВЫЙ РЯД ====================
-				// голубой шар (сфера)
-				var geometry = new THREE.SphereGeometry( 100, 32, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0x00BFFF } );
-				var sphere = new THREE.Mesh( geometry, material );
-				sphere.position.set( -450, 100, 0 );
-				scene.add( sphere );
-				
-				// желтая пирамида (конус с 4 сегментами)
-				var geometry = new THREE.CylinderGeometry( 0, 90, 180, 4 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFFD700 } );
-				var pyramid = new THREE.Mesh( geometry, material );
-				pyramid.position.set( -100, 90, 0 );
-				scene.add( pyramid );
-				
-				// розовый прямоугольный параллелепипед
-				var geometry = new THREE.BoxGeometry( 160, 100, 200 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFF69B4 } );
-				var pinkBox = new THREE.Mesh( geometry, material );
-				pinkBox.position.set( 280, 50, 0 );
-				scene.add( pinkBox );
-				
-				// ==================== ВТОРОЙ РЯД ====================
-				// фиолетовый конус
-				var geometry = new THREE.CylinderGeometry( 0, 100, 200, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0x8B00FF } );
-				var purpleCone = new THREE.Mesh( geometry, material );
-				purpleCone.position.set( -450, 100, 350 );
-				scene.add( purpleCone );
-				
-				// зеленый чайник (цвет и расположение изменены)
-				var geometry = new TeapotGeometry( 100 );
-				var material = new THREE.MeshPhongMaterial( { color: 0x32CD32 } );	
-				var teapot = new THREE.Mesh( geometry, material );
-				teapot.position.set( -100, 120, 350 ); 					
-				scene.add( teapot );
-				
-				// белый усеченный конус
-				var geometry = new THREE.CylinderGeometry( 120, 60, 160, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFFFFFF } );
-				var frustum = new THREE.Mesh( geometry, material );
-				frustum.position.set( 280, 80, 350 );
-				scene.add( frustum );
-				
-				// ==================== ТРЕТИЙ РЯД ====================
-				// красный цилиндр
-				var geometry = new THREE.CylinderGeometry( 80, 80, 200, 32 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFF0000 } );
-				var redCylinder = new THREE.Mesh( geometry, material );
-				redCylinder.position.set( -450, 100, -350 );
-				scene.add( redCylinder );
-				
-				// красный тетраэдр
-				var geometry = new THREE.TetrahedronGeometry( 90 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFF3333 } );
-				var tetra = new THREE.Mesh( geometry, material );
-				tetra.position.set( -100, 90, -350 );
-				scene.add( tetra );
-				
-				// розовая пирамида (конус с 4 сегментами)
-				var geometry = new THREE.CylinderGeometry( 0, 90, 180, 4 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xFFB6C1 } );
-				var pinkPyramid = new THREE.Mesh( geometry, material );
-				pinkPyramid.position.set( 280, 90, -350 );
-				scene.add( pinkPyramid );
+            // 2. Желтая пирамида (4-гранная)
+            var geometry = new THREE.ConeGeometry(80, 160, 4);
+            var material = new THREE.MeshStandardMaterial({ color: 0xFFD700, roughness: 0.4 });
+            var yellowPyramid = new THREE.Mesh(geometry, material);
+            yellowPyramid.position.set(0, 80, 0);
+            scene.add(yellowPyramid);
 
-				// вспомогательная сетка
-				const helper = new THREE.GridHelper( 1000, 10 );
-				scene.add( helper );
-			}
+            // 3. Розовый прямоугольник
+            var geometry = new THREE.BoxGeometry(140, 100, 180);
+            var material = new THREE.MeshStandardMaterial({ color: 0xFF69B4, roughness: 0.3 });
+            var pinkBox = new THREE.Mesh(geometry, material);
+            pinkBox.position.set(350, 50, 0);
+            scene.add(pinkBox);
 
-			// EVENT HANDLERS
-			function onWindowResize() {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
+            // ==================== ВТОРОЙ РЯД (Z = 350) ====================
+            
+            // 4. Фиолетовый конус
+            var geometry = new THREE.ConeGeometry(80, 180, 32);
+            var material = new THREE.MeshStandardMaterial({ color: 0x9370DB, roughness: 0.3 });
+            var purpleCone = new THREE.Mesh(geometry, material);
+            purpleCone.position.set(-350, 90, 350);
+            scene.add(purpleCone);
 
-			function animate() {
-				requestAnimationFrame( animate );
-				controls.update();
-				render();
-			}
+            // 5. Зеленый чайник
+            var geometry = new TeapotGeometry(75);
+            var material = new THREE.MeshStandardMaterial({ color: 0x32CD32, roughness: 0.2, metalness: 0.4 });
+            var teapot = new THREE.Mesh(geometry, material);
+            teapot.position.set(0, 60, 350);
+            scene.add(teapot);
 
-			function render() {
-				renderer.render( scene, camera );
-			}			
+            // 6. Белый усеченный конус
+            var geometry = new THREE.CylinderGeometry(100, 50, 140, 32);
+            var material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.5 });
+            var frustum = new THREE.Mesh(geometry, material);
+            frustum.position.set(350, 70, 350);
+            scene.add(frustum);
 
-		</script>
-	
-</body></html>
+            // ==================== ТРЕТИЙ РЯД (Z = -350) ====================
+            
+            // 7. Красный цилиндр
+            var geometry = new THREE.CylinderGeometry(70, 70, 170, 32);
+            var material = new THREE.MeshStandardMaterial({ color: 0xFF3333, roughness: 0.3 });
+            var redCylinder = new THREE.Mesh(geometry, material);
+            redCylinder.position.set(-350, 85, -350);
+            scene.add(redCylinder);
+
+            // 8. Красный тетраэдр
+            var geometry = new THREE.TetrahedronGeometry(85);
+            var material = new THREE.MeshStandardMaterial({ color: 0xDC143C, roughness: 0.2, metalness: 0.1 });
+            var tetra = new THREE.Mesh(geometry, material);
+            tetra.position.set(0, 85, -350);
+            scene.add(tetra);
+
+            // 9. Розовая пирамида
+            var geometry = new THREE.ConeGeometry(80, 160, 4);
+            var material = new THREE.MeshStandardMaterial({ color: 0xFFB6C1, roughness: 0.4 });
+            var pinkPyramid = new THREE.Mesh(geometry, material);
+            pinkPyramid.position.set(350, 80, -350);
+            scene.add(pinkPyramid);
+
+            // Вспомогательная сетка
+            const helper = new THREE.GridHelper(1200, 20, 0x888888, 0xaaaaaa);
+            helper.position.y = -20;
+            scene.add(helper);
+            
+            // Добавим простые оси для ориентации (опционально)
+            const axesHelper = new THREE.AxesHelper(400);
+            axesHelper.material.transparent = true;
+            axesHelper.material.opacity = 0.15;
+            scene.add(axesHelper);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            render();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
