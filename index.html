@@ -135,11 +135,12 @@
             teapot.position.set(0, 60, 350);
             scene.add(teapot);
 
-            // 6. Белый усеченный конус
+            // 6. Белый усеченный конус - ПЕРЕВЕРНУТ ВВЕРХ НОГАМИ
             var geometry = new THREE.CylinderGeometry(100, 50, 140, 32);
             var material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.5 });
             var frustum = new THREE.Mesh(geometry, material);
-            frustum.position.set(350, 70, 350);
+            frustum.position.set(350, 140, 350);  // Поднял выше, так как после переворота нижняя точка будет выше
+            frustum.rotation.x = Math.PI;  // Поворот на 180 градусов вокруг оси X (переворот вверх ногами)
             scene.add(frustum);
 
             // ==================== ТРЕТИЙ РЯД (Z = -350) ====================
